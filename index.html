@@ -3,51 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voibe | Global Talent Bridge</title>
+    <title>Voibe Global | Talent Bridge</title>
     <link rel="stylesheet" href="style.css">
-    <!-- PeerJS Library for Global Calls -->
     <script src="https://unpkg.com"></script>
 </head>
 <body>
     <div class="app-container">
         <header>
-            <h1>Voibe Global</h1>
-            <div id="status-bar" class="status-ready">Generating Global ID...</div>
+            <h1>Voibe</h1>
+            <div id="status-bar">Generating Global ID...</div>
         </header>
 
-        <section class="call-area">
-            <div class="video-grid">
-                <div class="video-box">
-                    <video id="localVideo" autoplay muted playsinline></video>
-                    <span class="label">You</span>
-                </div>
-                <div class="video-box">
-                    <video id="remoteVideo" autoplay playsinline></video>
-                    <span class="label">Remote Talent</span>
-                </div>
+        <div class="mode-selector">
+            <button onclick="setMode('audio')" id="btn-audio" class="mode-btn">🎤 Audio Call</button>
+            <button onclick="setMode('video')" id="btn-video" class="mode-btn active">📹 Video Call</button>
+            <button onclick="setMode('meeting')" id="btn-meeting" class="mode-btn">👥 Meeting</button>
+        </div>
+
+        <div class="video-grid" id="video-grid">
+            <div class="video-box" id="local-box">
+                <video id="localVideo" autoplay muted playsinline></video>
+                <span class="label">You</span>
             </div>
-            <div id="subtitle-layer" class="subtitles">Choose your language and start...</div>
-        </section>
+            <div class="video-box" id="remote-box">
+                <video id="remoteVideo" autoplay playsinline></video>
+                <span class="label">Partner</span>
+            </div>
+        </div>
+
+        <div id="subtitle-layer" class="subtitles">Choose Mode & Language...</div>
 
         <section class="controls">
-            <div class="id-section">
-                <input type="text" id="remote-id" placeholder="Enter Friend's ID">
+            <div class="input-group">
+                <input type="text" id="remote-id" placeholder="Paste Partner's ID">
                 <button id="call-btn">Connect Globally</button>
             </div>
             
-            <div class="lang-section">
-                <label>I Speak:</label>
+            <div class="input-group">
                 <select id="my-lang">
                     <option value="hi-IN">Hindi (हिन्दी)</option>
                     <option value="en-US">English</option>
                     <option value="es-ES">Spanish</option>
                     <option value="fr-FR">French</option>
-                    <option value="de-DE">German</option>
                     <option value="ja-JP">Japanese</option>
                     <option value="ar-SA">Arabic</option>
-                    <!-- More can be added -->
+                    <option value="de-DE">German</option>
                 </select>
-                <button id="start-btn">Go Live 🟢</button>
+                <button id="start-btn">Start Live 🟢</button>
             </div>
         </section>
     </div>
