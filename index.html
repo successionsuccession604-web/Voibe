@@ -5,22 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voibe Global | Talent Bridge</title>
     <link rel="stylesheet" href="style.css">
+    <!-- PeerJS Library -->
     <script src="https://unpkg.com"></script>
 </head>
 <body>
     <div class="app-container">
         <header>
             <h1>Voibe</h1>
-            <div id="status-bar">Generating Global ID...</div>
+            <div id="status-bar" style="color: #fbbf24;">Connecting to Server...</div>
         </header>
 
         <div class="mode-selector">
-            <button onclick="setMode('audio')" id="btn-audio" class="mode-btn">🎤 Audio Call</button>
-            <button onclick="setMode('video')" id="btn-video" class="mode-btn active">📹 Video Call</button>
-            <button onclick="setMode('meeting')" id="btn-meeting" class="mode-btn">👥 Meeting</button>
+            <button onclick="window.setMode('audio')" id="btn-audio" class="mode-btn">🎤 Audio Call</button>
+            <button onclick="window.setMode('video')" id="btn-video" class="mode-btn active">📹 Video Call</button>
+            <button onclick="window.setMode('meeting')" id="btn-meeting" class="mode-btn">👥 Meeting</button>
         </div>
 
-        <div class="video-grid" id="video-grid">
+        <div class="video-grid">
             <div class="video-box" id="local-box">
                 <video id="localVideo" autoplay muted playsinline></video>
                 <span class="label">You</span>
@@ -31,7 +32,7 @@
             </div>
         </div>
 
-        <div id="subtitle-layer" class="subtitles">Choose Mode & Language...</div>
+        <div id="subtitle-layer" class="subtitles">Choose Mode & Click 'Start Live'</div>
 
         <section class="controls">
             <div class="input-group">
@@ -46,13 +47,12 @@
                     <option value="es-ES">Spanish</option>
                     <option value="fr-FR">French</option>
                     <option value="ja-JP">Japanese</option>
-                    <option value="ar-SA">Arabic</option>
-                    <option value="de-DE">German</option>
                 </select>
-                <button id="start-btn">Start Live 🟢</button>
+                <button onclick="window.initMedia()" id="start-btn">Start Live 🟢</button>
             </div>
         </section>
     </div>
+    <!-- Simple Script Load -->
     <script src="script.js"></script>
 </body>
 </html>
