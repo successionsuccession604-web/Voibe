@@ -3,43 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voibe | Two-Way Live Dubbing</title>
+    <title>Voibe | Global Talent Bridge</title>
     <link rel="stylesheet" href="style.css">
-    <!-- PeerJS Library - ise load hona zaroori hai -->
+    <!-- PeerJS Reliable Link -->
     <script src="https://unpkg.com"></script>
 </head>
 <body>
     <div class="app-container">
         <header>
             <h1>Voibe</h1>
-            <div id="status-bar" style="color: #fbbf24;">Connecting...</div>
+            <div id="status-bar" style="color: #fbbf24; font-weight: bold;">Initializing System...</div>
         </header>
 
         <div class="mode-selector">
-            <button onclick="window.setMode('audio')" id="btn-audio" class="mode-btn">🎤 Audio Call</button>
-            <button onclick="window.setMode('video')" id="btn-video" class="mode-btn active">📹 Video Call</button>
+            <button onclick="window.setMode('audio')" id="btn-audio" class="mode-btn">🎤 Audio</button>
+            <button onclick="window.setMode('video')" id="btn-video" class="mode-btn active">📹 Video</button>
             <button onclick="window.setMode('meeting')" id="btn-meeting" class="mode-btn">👥 Meeting</button>
         </div>
 
         <div class="video-grid">
-            <div class="video-box" id="local-box">
-                <video id="localVideo" autoplay muted playsinline></video>
-                <span class="label">You</span>
-            </div>
-            <div class="video-box" id="remote-box">
-                <video id="remoteVideo" autoplay playsinline></video>
-                <span class="label">Partner</span>
-            </div>
+            <div class="video-box" id="local-box"><video id="localVideo" autoplay muted playsinline></video></div>
+            <div class="video-box" id="remote-box"><video id="remoteVideo" autoplay playsinline></video></div>
         </div>
 
-        <div id="subtitle-layer" class="subtitles">Choose Mode & Click 'Start Live'</div>
+        <div id="subtitle-layer" class="subtitles">Press 'Start Live' to begin</div>
 
         <section class="controls">
             <div class="input-group">
                 <input type="text" id="remote-id" placeholder="Paste Partner's ID">
                 <button id="call-btn">Connect Globally</button>
             </div>
-            
             <div class="input-group">
                 <select id="my-lang">
                     <option value="hi-IN">Hindi (हिन्दी)</option>
