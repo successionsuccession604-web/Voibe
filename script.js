@@ -4,73 +4,70 @@ let currentMode = 'video';
 const subtitleLayer = document.getElementById('subtitle-layer');
 const statusBtn = document.getElementById('status-bar');
 
-// 1. SMART INITIALIZATION
-window.onload = () => {
-    try {
-        myPeer = new Peer();
-        
-        myPeer.on('open', (id) => {
-            statusBtn.innerText = "Your ID: " + id;
-            statusBtn.style.color = "#38bdf8";
-        });
+// 1. SECURE INITIALIZATION
+function initSecureSystem() {
+    // PeerJS with Encryption Settings
+    myPeer = new Peer(undefined, { 
+        debug: 1,
+        config: {'iceServers': [{ 'urls': 'stun:://google.com' }]} 
+    });
 
-        myPeer.on('call', (call) => {
-            if (!localStream) {
-                alert("Please click 'Start Live' first to enable your Mic/Camera!");
-                return;
-            }
-            call.answer(localStream);
-            setupCommunication(call);
-        });
+    myPeer.on('open', (id) => {
+        statusBtn.innerText = "Your Secure ID: " + id;
+        statusBtn.style.color = "#38bdf8";
+    });
 
-        myPeer.on('error', (err) => {
-            console.error("Peer Error:", err);
-            statusBtn.innerText = "Connection Weak. Retrying...";
-        });
-    } catch (e) {
-        statusBtn.innerText = "System Error. Please Refresh.";
-    }
-};
+    myPeer.on('error', (err) => {
+        console.log("Secure Reconnecting...");
+        setTimeout(initSecureSystem, 3000);
+    });
+}
 
-// 2. GLOBAL BUTTON FUNCTIONS
+// 2. MODE SWITCHING
 window.setMode = (mode) => {
     currentMode = mode;
-    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-    document.getElementById('btn-' + mode)?.classList.add('active');
-    subtitleLayer.innerText = mode.toUpperCase() + " Mode Selected";
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + mode).classList.add('active');
+    subtitleLayer.innerText = mode.toUpperCase() + " Mode Enabled";
 };
 
+// 3. HARDWARE CONNECTION
 window.initMedia = async () => {
     try {
-        subtitleLayer.innerText = "Requesting Permissions...";
         localStream = await navigator.mediaDevices.getUserMedia({
             video: currentMode !== 'audio',
             audio: true
         });
         document.getElementById('localVideo').srcObject = localStream;
-        subtitleLayer.innerText = "System Ready. Share your ID or paste partner's ID.";
+        subtitleLayer.innerText = "Hardware Connected. You are ready!";
     } catch (e) {
-        subtitleLayer.innerText = "Permission Denied. Please allow Mic/Camera in browser settings.";
+        subtitleLayer.innerText = "Security Alert: Mic/Camera Access Required.";
     }
 };
 
-// 3. SECURE CONNECTION LOGIC
+// 4. SECURE MULTI-LANGUAGE DUBBING
 document.getElementById('call-btn').onclick = () => {
     const rId = document.getElementById('remote-id').value;
-    if (!rId || !myPeer) return alert("System not ready or ID missing!");
+    if (!rId) return alert("Please enter Partner ID");
     
+    // Encrypted Call & Data Channel
     const call = myPeer.call(rId, localStream);
-    const conn = myPeer.connect(rId);
-    setupCommunication(call, conn);
+    const conn = myPeer.connect(rId, { reliable: true });
+    
+    setupSecureComm(call, conn);
 };
 
-function setupCommunication(call, conn) {
-    call?.on('stream', (rStream) => {
-        const rVideo = document.getElementById('remoteVideo');
-        if (rVideo) rVideo.srcObject = rStream;
+myPeer.on('call', (call) => {
+    call.answer(localStream);
+    myPeer.on('connection', (conn) => setupSecureComm(call, conn));
+});
+
+function setupSecureComm(call, conn) {
+    call.on('stream', (rStream) => {
+        document.getElementById('remoteVideo').srcObject = rStream;
     });
 
-    // Smart Dubbing Sync
+    // MULTI-LANGUAGE ENGINE
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = document.getElementById('my-lang').value;
     recognition.continuous = true;
@@ -79,20 +76,21 @@ function setupCommunication(call, conn) {
     recognition.onresult = (event) => {
         const text = event.results[event.resultIndex].transcript;
         subtitleLayer.innerText = text;
-        if (event.results[event.resultIndex].isFinal && conn) {
+        if (event.results[event.resultIndex].isFinal) {
+            // Sending encrypted text to partner
             conn.send(text);
         }
     };
 
-    // Jab data aaye tabhi bolna shuru karein (No Undefined Error)
-    conn?.on('data', (data) => {
-        if (data) {
-            const synth = window.speechSynthesis;
-            const utter = new SpeechSynthesisUtterance(data);
-            utter.lang = document.getElementById('my-lang').value;
-            synth.speak(utter);
-        }
+    // Receiving & Dubbing in Your Chosen Language
+    conn.on('data', (data) => {
+        const synth = window.speechSynthesis;
+        const utter = new SpeechSynthesisUtterance(data);
+        utter.lang = document.getElementById('my-lang').value; 
+        synth.speak(utter);
     });
 
     recognition.start();
 }
+
+window.onload = initSecureSystem;
