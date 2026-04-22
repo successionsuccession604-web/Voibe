@@ -1,87 +1,91 @@
-const myPeer = new Peer(); 
+const myPeer = new Peer();
 let localStream;
-let currentConn;
-
+let currentMode = 'video';
 const subtitleLayer = document.getElementById('subtitle-layer');
 const statusBtn = document.getElementById('status-bar');
 
-// 1. Initialize Global ID
+// 1. Peer ID Setup
 myPeer.on('open', (id) => {
-    statusBtn.innerText = "Your Global ID: " + id;
-    statusBtn.classList.add('ready');
+    statusBtn.innerText = "Share Your ID: " + id;
+    statusBtn.style.color = "#38bdf8";
 });
 
-// 2. Mic & Camera Access
-navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(stream => {
-    localStream = stream;
-    document.getElementById('localVideo').srcObject = stream;
-}).catch(err => subtitleLayer.innerText = "Mic/Camera error: " + err.message);
-
-// 3. Making a Global Call
-document.getElementById('call-btn').onclick = () => {
-    const remoteId = document.getElementById('remote-id').value;
-    if(!remoteId) return alert("Please enter a valid ID");
+// 2. Mode Switching Logic
+window.setMode = (mode) => {
+    currentMode = mode;
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('btn-' + mode).classList.add('active');
     
-    const call = myPeer.call(remoteId, localStream);
-    const conn = myPeer.connect(remoteId);
-    handleCommunication(call, conn);
+    const localBox = document.getElementById('local-box');
+    const remoteBox = document.getElementById('remote-box');
+
+    if(mode === 'audio') {
+        localBox.style.display = 'none';
+        remoteBox.style.display = 'none';
+        subtitleLayer.innerText = "Audio Mode Active 🎤";
+    } else {
+        localBox.style.display = 'block';
+        remoteBox.style.display = 'block';
+        subtitleLayer.innerText = mode.toUpperCase() + " Mode Active";
+    }
 };
 
-// 4. Receiving a Global Call
-myPeer.on('call', (call) => {
-    call.answer(localStream);
-    myPeer.on('connection', (conn) => {
-        handleCommunication(call, conn);
-    });
-});
-
-function handleCommunication(call, conn) {
-    call.on('stream', (remoteStream) => {
-        document.getElementById('remoteVideo').srcObject = remoteStream;
-    });
-
-    currentConn = conn;
-    setupSpeechToDubbing(conn);
+// 3. Media Access
+async function initMedia() {
+    try {
+        localStream = await navigator.mediaDevices.getUserMedia({
+            video: currentMode !== 'audio',
+            audio: true
+        });
+        document.getElementById('localVideo').srcObject = localStream;
+    } catch (e) {
+        subtitleLayer.innerText = "Permission Denied: Mic/Camera required.";
+    }
 }
 
-// 5. Live Dubbing Engine
-function setupSpeechToDubbing(connection) {
+// 4. Calling & Receiving
+document.getElementById('call-btn').onclick = () => {
+    const rId = document.getElementById('remote-id').value;
+    const call = myPeer.call(rId, localStream);
+    const conn = myPeer.connect(rId);
+    setupCommunication(call, conn);
+};
+
+myPeer.on('call', (call) => {
+    call.answer(localStream);
+    myPeer.on('connection', (conn) => setupCommunication(call, conn));
+});
+
+function setupCommunication(call, conn) {
+    call.on('stream', rStream => {
+        document.getElementById('remoteVideo').srcObject = rStream;
+    });
+    
+    // Live Translation Logic
+    setupSpeech(conn);
+    conn.on('data', data => dubbingOutput(data));
+}
+
+// 5. Speech to Dubbing
+function setupSpeech(connection) {
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = document.getElementById('my-lang').value;
     recognition.continuous = true;
     recognition.interimResults = true;
 
     recognition.onresult = (event) => {
-        const transcript = event.results[event.resultIndex].transcript;
-        subtitleLayer.innerText = transcript;
-
-        if (event.results[event.resultIndex].isFinal) {
-            // Send original text to partner
-            connection.send(transcript);
-        }
+        const text = event.results[event.resultIndex].transcript;
+        subtitleLayer.innerText = text;
+        if(event.results[event.resultIndex].isFinal) connection.send(text);
     };
-
-    // Jab partner se text aaye (Data Channel)
-    connection.on('data', (data) => {
-        dubbingOutput(data);
-    });
-
     recognition.start();
 }
 
-// 6. Dubbing Voice Output
 function dubbingOutput(text) {
     const synth = window.speechSynthesis;
-    const utterance = new SpeechSynthesisUtterance(text);
-    
-    // Yahan hum partner ki language detect karke usme bolenge
-    utterance.lang = 'en-US'; // Default dubbing to English
-    utterance.pitch = 1.1;
-    utterance.rate = 1.0;
-
-    synth.speak(utterance);
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'en-US'; // Change dynamically as needed
+    synth.speak(utter);
 }
 
-document.getElementById('start-btn').onclick = () => {
-    subtitleLayer.innerText = "System Live. Start Speaking.";
-};
+document.getElementById('start-btn').onclick = initMedia;
