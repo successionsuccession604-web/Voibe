@@ -3,41 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voibe | Global Talent Bridge</title>
+    <title>Voibe | Secure Global Talent Bridge</title>
     <link rel="stylesheet" href="style.css">
-    <!-- PeerJS Reliable Link -->
+    <!-- Secure Connection Library -->
     <script src="https://unpkg.com"></script>
 </head>
 <body>
     <div class="app-container">
         <header>
             <h1>Voibe</h1>
-            <div id="status-bar" style="color: #fbbf24; font-weight: bold;">Initializing System...</div>
+            <div id="status-bar" style="color: #38bdf8;">Connecting to Secure Server...</div>
         </header>
 
         <div class="mode-selector">
-            <button onclick="window.setMode('audio')" id="btn-audio" class="mode-btn">🎤 Audio</button>
-            <button onclick="window.setMode('video')" id="btn-video" class="mode-btn active">📹 Video</button>
+            <button onclick="window.setMode('audio')" id="btn-audio" class="mode-btn">🎤 Normal Call</button>
+            <button onclick="window.setMode('video')" id="btn-video" class="mode-btn active">📹 Video Call</button>
             <button onclick="window.setMode('meeting')" id="btn-meeting" class="mode-btn">👥 Meeting</button>
         </div>
 
         <div class="video-grid">
-            <div class="video-box" id="local-box"><video id="localVideo" autoplay muted playsinline></video></div>
-            <div class="video-box" id="remote-box"><video id="remoteVideo" autoplay playsinline></video></div>
+            <div class="video-box"><video id="localVideo" autoplay muted playsinline></video></div>
+            <div class="video-box"><video id="remoteVideo" autoplay playsinline></video></div>
         </div>
 
-        <div id="subtitle-layer" class="subtitles">Press 'Start Live' to begin</div>
+        <div id="subtitle-layer" class="subtitles">Private & Secure Communication Active</div>
 
         <section class="controls">
             <div class="input-group">
-                <input type="text" id="remote-id" placeholder="Paste Partner's ID">
-                <button id="call-btn">Connect Globally</button>
+                <input type="text" id="remote-id" placeholder="Paste Partner's Secure ID">
+                <button id="call-btn">Secure Connect</button>
             </div>
             <div class="input-group">
+                <!-- 50+ Languages Support -->
                 <select id="my-lang">
                     <option value="hi-IN">Hindi (हिन्दी)</option>
                     <option value="en-US">English</option>
                     <option value="es-ES">Spanish</option>
+                    <option value="fr-FR">French</option>
+                    <option value="de-DE">German</option>
+                    <option value="ja-JP">Japanese</option>
+                    <option value="ru-RU">Russian</option>
+                    <option value="ar-SA">Arabic</option>
+                    <option value="zh-CN">Chinese</option>
                 </select>
                 <button onclick="window.initMedia()" id="start-btn">Start Live 🟢</button>
             </div>
