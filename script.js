@@ -1,105 +1,86 @@
 let myPeer = null;
 let localStream = null;
-let currentMode = 'video';
-const subtitleLayer = document.getElementById('subtitle-layer');
-const statusBtn = document.getElementById('status-bar');
 
-// 1. SMART INITIALIZATION (Errors को रोकने के लिए)
-window.onload = () => {
-    try {
-        // PeerJS setup with debug mode to see issues
-        myPeer = new Peer(undefined, { debug: 1 });
-
+// 1. Peer Initializer with Retry (Smart Strategy)
+function initPeer() {
+    if (typeof Peer !== 'undefined') {
+        myPeer = new Peer();
+        
         myPeer.on('open', (id) => {
-            if (statusBtn) {
-                statusBtn.innerText = "Your Secure ID: " + id;
-                statusBtn.style.color = "#38bdf8";
-            }
-            console.log("Global Connection Established. ID:", id);
-        });
-
-        myPeer.on('call', (call) => {
-            if (!localStream) {
-                alert("Please click 'Start Live' first to enable Mic/Camera!");
-                return;
-            }
-            call.answer(localStream);
-            setupSecureCommunication(call);
+            document.getElementById('status-bar').innerText = "Your ID: " + id;
+            document.getElementById('status-bar').style.color = "#38bdf8";
+            console.log("System Online. ID:", id);
         });
 
         myPeer.on('error', (err) => {
-            console.error("Connection Error:", err.type);
-            if (statusBtn) statusBtn.innerText = "Connecting to Secure Bridge...";
+            console.log("Connection Busy... Retrying.");
+            setTimeout(initPeer, 3000);
         });
-    } catch (e) {
-        console.error("System Init Error:", e);
+    } else {
+        console.log("Library loading...");
+        setTimeout(initPeer, 1000); // 1 second baad phir check karein
     }
-};
+}
 
-// 2. GLOBAL BUTTON LOGIC (window. se define kiya hai taaki HTML pehchan sake)
+// 2. Button Functions (Window Scope)
 window.setMode = (mode) => {
-    currentMode = mode;
-    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-    document.getElementById('btn-' + mode)?.classList.add('active');
-    if (subtitleLayer) subtitleLayer.innerText = mode.toUpperCase() + " Mode Active";
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + mode).classList.add('active');
+    document.getElementById('subtitle-layer').innerText = mode.toUpperCase() + " Mode On";
 };
 
 window.initMedia = async () => {
     try {
-        if (subtitleLayer) subtitleLayer.innerText = "Connecting to Hardware...";
-        localStream = await navigator.mediaDevices.getUserMedia({
-            video: currentMode !== 'audio',
-            audio: true
-        });
-        const localVideo = document.getElementById('localVideo');
-        if (localVideo) localVideo.srcObject = localStream;
-        if (subtitleLayer) subtitleLayer.innerText = "Hardware Ready. Connect to Partner.";
+        localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+        document.getElementById('localVideo').srcObject = localStream;
+        document.getElementById('subtitle-layer').innerText = "Hardware Active. Connect with Partner.";
     } catch (e) {
-        if (subtitleLayer) subtitleLayer.innerText = "Security Alert: Permission Denied.";
+        alert("Please allow Camera/Mic access.");
     }
 };
 
-// 3. SECURE TWO-WAY DUBBING
+// 3. Call Connection
 document.getElementById('call-btn').onclick = () => {
-    const rId = document.getElementById('remote-id')?.value;
-    if (!rId || !myPeer) return alert("System not ready or Partner ID missing!");
+    const rId = document.getElementById('remote-id').value;
+    if(!rId || !localStream) return alert("Please Start Live and Enter ID!");
     
     const call = myPeer.call(rId, localStream);
     const conn = myPeer.connect(rId);
-    setupSecureCommunication(call, conn);
-};
-
-function setupSecureCommunication(call, conn) {
-    call?.on('stream', (remoteStream) => {
-        const remoteVideo = document.getElementById('remoteVideo');
-        if (remoteVideo) remoteVideo.srcObject = remoteStream;
+    
+    call.on('stream', (rStream) => {
+        document.getElementById('remoteVideo').srcObject = rStream;
     });
 
-    // Smart Recognition Logic
+    // Dubbing Start
+    setupDubbing(conn);
+};
+
+myPeer?.on('call', (call) => {
+    call.answer(localStream);
+    myPeer.on('connection', (conn) => setupDubbing(conn));
+});
+
+function setupDubbing(conn) {
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = document.getElementById('my-lang')?.value || 'hi-IN';
+    recognition.lang = document.getElementById('my-lang').value;
     recognition.continuous = true;
     recognition.interimResults = true;
 
     recognition.onresult = (event) => {
-        const transcript = event.results[event.resultIndex].transcript;
-        if (subtitleLayer) subtitleLayer.innerText = transcript;
-        
-        // Data send karein jab sentence khatam ho
-        if (event.results[event.resultIndex].isFinal && conn) {
-            conn.send(transcript);
-        }
+        const text = event.results[event.resultIndex].transcript;
+        document.getElementById('subtitle-layer').innerText = text;
+        if(event.results[event.resultIndex].isFinal) conn.send(text);
     };
 
-    // Jab Partner se data mile (Two-Way Bridge)
-    conn?.on('data', (data) => {
-        if (data) {
-            const synth = window.speechSynthesis;
-            const utter = new SpeechSynthesisUtterance(data);
-            utter.lang = document.getElementById('my-lang')?.value || 'en-US';
-            synth.speak(utter);
-        }
+    conn.on('data', (data) => {
+        const synth = window.speechSynthesis;
+        const utter = new SpeechSynthesisUtterance(data);
+        utter.lang = document.getElementById('my-lang').value;
+        synth.speak(utter);
     });
 
     recognition.start();
 }
+
+// System Start
+window.onload = initPeer;
