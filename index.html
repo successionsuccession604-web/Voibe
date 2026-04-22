@@ -3,32 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal Talent Bridge | AI Live Dubber</title>
+    <title>Voibe | Global Talent Bridge</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-container">
-        <h1>Global Talent Bridge</h1>
-        <p>Break the language barrier. Speak in your mother tongue.</p>
+        <h1>Voibe</h1>
+        <p>Breaking barriers. Speaking talent.</p>
         
-        <div class="video-overlay" id="video-box">
+        <div class="video-overlay">
             <video id="localVideo" autoplay muted></video>
-            <div id="subtitle-layer" class="subtitles">Listening...</div>
+            <div id="subtitle-layer" class="subtitles">System Ready...</div>
         </div>
 
         <div class="controls">
             <select id="language-select">
-                <option value="hi-IN">Hindi</option>
+                <option value="hi-IN">Hindi (Mother Tongue)</option>
                 <option value="en-US">English</option>
                 <option value="es-ES">Spanish</option>
-                <option value="fr-FR">French</option>
             </select>
             <button id="start-btn">Start Live Dubbing</button>
         </div>
     </div>
 
-    <!-- MediaPipe Tasks GenAI SDK -->
-    <script src="https://jsdelivr.net"></script>
-    <script src="script.js" type="module"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
