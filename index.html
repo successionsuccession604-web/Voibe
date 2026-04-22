@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voibe Global | Talent Bridge</title>
+    <title>Voibe | Two-Way Live Dubbing</title>
     <link rel="stylesheet" href="style.css">
-    <!-- PeerJS Library -->
+    <!-- PeerJS Library - ise load hona zaroori hai -->
     <script src="https://unpkg.com"></script>
 </head>
 <body>
     <div class="app-container">
         <header>
             <h1>Voibe</h1>
-            <div id="status-bar" style="color: #fbbf24;">Connecting to Server...</div>
+            <div id="status-bar" style="color: #fbbf24;">Connecting...</div>
         </header>
 
         <div class="mode-selector">
@@ -45,14 +45,11 @@
                     <option value="hi-IN">Hindi (हिन्दी)</option>
                     <option value="en-US">English</option>
                     <option value="es-ES">Spanish</option>
-                    <option value="fr-FR">French</option>
-                    <option value="ja-JP">Japanese</option>
                 </select>
                 <button onclick="window.initMedia()" id="start-btn">Start Live 🟢</button>
             </div>
         </section>
     </div>
-    <!-- Simple Script Load -->
     <script src="script.js"></script>
 </body>
 </html>
