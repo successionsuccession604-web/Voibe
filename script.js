@@ -4,93 +4,102 @@ let currentMode = 'video';
 const subtitleLayer = document.getElementById('subtitle-layer');
 const statusBtn = document.getElementById('status-bar');
 
-// 1. SECURE INITIALIZATION
-function initSecureSystem() {
-    // PeerJS with Encryption Settings
-    myPeer = new Peer(undefined, { 
-        debug: 1,
-        config: {'iceServers': [{ 'urls': 'stun:://google.com' }]} 
-    });
+// 1. SMART INITIALIZATION (Errors को रोकने के लिए)
+window.onload = () => {
+    try {
+        // PeerJS setup with debug mode to see issues
+        myPeer = new Peer(undefined, { debug: 1 });
 
-    myPeer.on('open', (id) => {
-        statusBtn.innerText = "Your Secure ID: " + id;
-        statusBtn.style.color = "#38bdf8";
-    });
+        myPeer.on('open', (id) => {
+            if (statusBtn) {
+                statusBtn.innerText = "Your Secure ID: " + id;
+                statusBtn.style.color = "#38bdf8";
+            }
+            console.log("Global Connection Established. ID:", id);
+        });
 
-    myPeer.on('error', (err) => {
-        console.log("Secure Reconnecting...");
-        setTimeout(initSecureSystem, 3000);
-    });
-}
+        myPeer.on('call', (call) => {
+            if (!localStream) {
+                alert("Please click 'Start Live' first to enable Mic/Camera!");
+                return;
+            }
+            call.answer(localStream);
+            setupSecureCommunication(call);
+        });
 
-// 2. MODE SWITCHING
-window.setMode = (mode) => {
-    currentMode = mode;
-    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('btn-' + mode).classList.add('active');
-    subtitleLayer.innerText = mode.toUpperCase() + " Mode Enabled";
+        myPeer.on('error', (err) => {
+            console.error("Connection Error:", err.type);
+            if (statusBtn) statusBtn.innerText = "Connecting to Secure Bridge...";
+        });
+    } catch (e) {
+        console.error("System Init Error:", e);
+    }
 };
 
-// 3. HARDWARE CONNECTION
+// 2. GLOBAL BUTTON LOGIC (window. se define kiya hai taaki HTML pehchan sake)
+window.setMode = (mode) => {
+    currentMode = mode;
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('btn-' + mode)?.classList.add('active');
+    if (subtitleLayer) subtitleLayer.innerText = mode.toUpperCase() + " Mode Active";
+};
+
 window.initMedia = async () => {
     try {
+        if (subtitleLayer) subtitleLayer.innerText = "Connecting to Hardware...";
         localStream = await navigator.mediaDevices.getUserMedia({
             video: currentMode !== 'audio',
             audio: true
         });
-        document.getElementById('localVideo').srcObject = localStream;
-        subtitleLayer.innerText = "Hardware Connected. You are ready!";
+        const localVideo = document.getElementById('localVideo');
+        if (localVideo) localVideo.srcObject = localStream;
+        if (subtitleLayer) subtitleLayer.innerText = "Hardware Ready. Connect to Partner.";
     } catch (e) {
-        subtitleLayer.innerText = "Security Alert: Mic/Camera Access Required.";
+        if (subtitleLayer) subtitleLayer.innerText = "Security Alert: Permission Denied.";
     }
 };
 
-// 4. SECURE MULTI-LANGUAGE DUBBING
+// 3. SECURE TWO-WAY DUBBING
 document.getElementById('call-btn').onclick = () => {
-    const rId = document.getElementById('remote-id').value;
-    if (!rId) return alert("Please enter Partner ID");
+    const rId = document.getElementById('remote-id')?.value;
+    if (!rId || !myPeer) return alert("System not ready or Partner ID missing!");
     
-    // Encrypted Call & Data Channel
     const call = myPeer.call(rId, localStream);
-    const conn = myPeer.connect(rId, { reliable: true });
-    
-    setupSecureComm(call, conn);
+    const conn = myPeer.connect(rId);
+    setupSecureCommunication(call, conn);
 };
 
-myPeer.on('call', (call) => {
-    call.answer(localStream);
-    myPeer.on('connection', (conn) => setupSecureComm(call, conn));
-});
-
-function setupSecureComm(call, conn) {
-    call.on('stream', (rStream) => {
-        document.getElementById('remoteVideo').srcObject = rStream;
+function setupSecureCommunication(call, conn) {
+    call?.on('stream', (remoteStream) => {
+        const remoteVideo = document.getElementById('remoteVideo');
+        if (remoteVideo) remoteVideo.srcObject = remoteStream;
     });
 
-    // MULTI-LANGUAGE ENGINE
+    // Smart Recognition Logic
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = document.getElementById('my-lang').value;
+    recognition.lang = document.getElementById('my-lang')?.value || 'hi-IN';
     recognition.continuous = true;
     recognition.interimResults = true;
 
     recognition.onresult = (event) => {
-        const text = event.results[event.resultIndex].transcript;
-        subtitleLayer.innerText = text;
-        if (event.results[event.resultIndex].isFinal) {
-            // Sending encrypted text to partner
-            conn.send(text);
+        const transcript = event.results[event.resultIndex].transcript;
+        if (subtitleLayer) subtitleLayer.innerText = transcript;
+        
+        // Data send karein jab sentence khatam ho
+        if (event.results[event.resultIndex].isFinal && conn) {
+            conn.send(transcript);
         }
     };
 
-    // Receiving & Dubbing in Your Chosen Language
-    conn.on('data', (data) => {
-        const synth = window.speechSynthesis;
-        const utter = new SpeechSynthesisUtterance(data);
-        utter.lang = document.getElementById('my-lang').value; 
-        synth.speak(utter);
+    // Jab Partner se data mile (Two-Way Bridge)
+    conn?.on('data', (data) => {
+        if (data) {
+            const synth = window.speechSynthesis;
+            const utter = new SpeechSynthesisUtterance(data);
+            utter.lang = document.getElementById('my-lang')?.value || 'en-US';
+            synth.speak(utter);
+        }
     });
 
     recognition.start();
 }
-
-window.onload = initSecureSystem;
