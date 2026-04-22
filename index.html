@@ -1,31 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voibe | Global Talent Bridge</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Chota sa fix taaki video background me na jaye */
+        .video-overlay {
+            position: relative;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 3px solid #38bdf8;
+            margin: 20px 0;
+            min-height: 300px;
+        }
+        video { width: 100%; display: block; transform: scaleX(-1); }
+    </style>
 </head>
 <body>
     <div class="app-container">
         <h1>Voibe</h1>
-        <p>Breaking barriers. Speaking talent.</p>
+        <p>Apni Mother Tongue mein talent dikhayein. Hum use dub karenge.</p>
         
         <div class="video-overlay">
-            <video id="localVideo" autoplay muted></video>
+            <video id="localVideo" autoplay playsinline muted></video>
             <div id="subtitle-layer" class="subtitles">System Ready...</div>
         </div>
 
         <div class="controls">
             <select id="language-select">
-                <option value="hi-IN">Hindi (Mother Tongue)</option>
+                <option value="hi-IN">Hindi (हिन्दी)</option>
                 <option value="en-US">English</option>
                 <option value="es-ES">Spanish</option>
+                <option value="fr-FR">French</option>
             </select>
             <button id="start-btn">Start Live Dubbing</button>
         </div>
     </div>
 
-    <script type="module" src="script.js"></script>
+    <!-- Koi heavy link nahi, sirf aapki local script -->
+    <script src="script.js"></script>
 </body>
 </html>
