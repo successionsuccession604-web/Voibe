@@ -1,17 +1,24 @@
-const myPeer = new Peer();
+let myPeer;
 let localStream;
 let currentMode = 'video';
 const subtitleLayer = document.getElementById('subtitle-layer');
 const statusBtn = document.getElementById('status-bar');
 
-// 1. Peer ID Setup
+// 1. Initialize PeerJS with Global ID
+myPeer = new Peer();
+
 myPeer.on('open', (id) => {
     statusBtn.innerText = "Share Your ID: " + id;
     statusBtn.style.color = "#38bdf8";
 });
 
-// 2. Mode Switching Logic
-window.setMode = (mode) => {
+myPeer.on('error', (err) => {
+    console.error(err);
+    statusBtn.innerText = "Connection Error. Refresh Page.";
+});
+
+// 2. Global Mode Switching Logic
+window.setMode = function(mode) {
     currentMode = mode;
     document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
     document.getElementById('btn-' + mode).classList.add('active');
@@ -30,22 +37,27 @@ window.setMode = (mode) => {
     }
 };
 
-// 3. Media Access
-async function initMedia() {
+// 3. Global Media Access
+window.initMedia = async function() {
     try {
+        subtitleLayer.innerText = "Accessing Camera/Mic...";
         localStream = await navigator.mediaDevices.getUserMedia({
             video: currentMode !== 'audio',
             audio: true
         });
         document.getElementById('localVideo').srcObject = localStream;
+        subtitleLayer.innerText = "Ready to Connect!";
     } catch (e) {
-        subtitleLayer.innerText = "Permission Denied: Mic/Camera required.";
+        console.error(e);
+        subtitleLayer.innerText = "Permission Denied: Please allow Camera/Mic.";
     }
-}
+};
 
 // 4. Calling & Receiving
 document.getElementById('call-btn').onclick = () => {
     const rId = document.getElementById('remote-id').value;
+    if(!rId) return alert("Please paste partner's ID");
+    
     const call = myPeer.call(rId, localStream);
     const conn = myPeer.connect(rId);
     setupCommunication(call, conn);
@@ -61,12 +73,11 @@ function setupCommunication(call, conn) {
         document.getElementById('remoteVideo').srcObject = rStream;
     });
     
-    // Live Translation Logic
     setupSpeech(conn);
     conn.on('data', data => dubbingOutput(data));
 }
 
-// 5. Speech to Dubbing
+// 5. Speech to Dubbing Logic
 function setupSpeech(connection) {
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = document.getElementById('my-lang').value;
@@ -84,8 +95,6 @@ function setupSpeech(connection) {
 function dubbingOutput(text) {
     const synth = window.speechSynthesis;
     const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = 'en-US'; // Change dynamically as needed
+    utter.lang = 'en-US'; 
     synth.speak(utter);
 }
-
-document.getElementById('start-btn').onclick = initMedia;
