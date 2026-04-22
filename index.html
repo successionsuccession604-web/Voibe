@@ -5,42 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voibe | Global Talent Bridge</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Chota sa fix taaki video background me na jaye */
-        .video-overlay {
-            position: relative;
-            background: #000;
-            border-radius: 15px;
-            overflow: hidden;
-            border: 3px solid #38bdf8;
-            margin: 20px 0;
-            min-height: 300px;
-        }
-        video { width: 100%; display: block; transform: scaleX(-1); }
-    </style>
+    <!-- PeerJS Library for Global Calls -->
+    <script src="https://unpkg.com"></script>
 </head>
 <body>
     <div class="app-container">
-        <h1>Voibe</h1>
-        <p>Apni Mother Tongue mein talent dikhayein. Hum use dub karenge.</p>
-        
-        <div class="video-overlay">
-            <video id="localVideo" autoplay playsinline muted></video>
-            <div id="subtitle-layer" class="subtitles">System Ready...</div>
-        </div>
+        <header>
+            <h1>Voibe Global</h1>
+            <div id="status-bar" class="status-ready">Generating Global ID...</div>
+        </header>
 
-        <div class="controls">
-            <select id="language-select">
-                <option value="hi-IN">Hindi (हिन्दी)</option>
-                <option value="en-US">English</option>
-                <option value="es-ES">Spanish</option>
-                <option value="fr-FR">French</option>
-            </select>
-            <button id="start-btn">Start Live Dubbing</button>
-        </div>
+        <section class="call-area">
+            <div class="video-grid">
+                <div class="video-box">
+                    <video id="localVideo" autoplay muted playsinline></video>
+                    <span class="label">You</span>
+                </div>
+                <div class="video-box">
+                    <video id="remoteVideo" autoplay playsinline></video>
+                    <span class="label">Remote Talent</span>
+                </div>
+            </div>
+            <div id="subtitle-layer" class="subtitles">Choose your language and start...</div>
+        </section>
+
+        <section class="controls">
+            <div class="id-section">
+                <input type="text" id="remote-id" placeholder="Enter Friend's ID">
+                <button id="call-btn">Connect Globally</button>
+            </div>
+            
+            <div class="lang-section">
+                <label>I Speak:</label>
+                <select id="my-lang">
+                    <option value="hi-IN">Hindi (हिन्दी)</option>
+                    <option value="en-US">English</option>
+                    <option value="es-ES">Spanish</option>
+                    <option value="fr-FR">French</option>
+                    <option value="de-DE">German</option>
+                    <option value="ja-JP">Japanese</option>
+                    <option value="ar-SA">Arabic</option>
+                    <!-- More can be added -->
+                </select>
+                <button id="start-btn">Go Live 🟢</button>
+            </div>
+        </section>
     </div>
-
-    <!-- Koi heavy link nahi, sirf aapki local script -->
     <script src="script.js"></script>
 </body>
 </html>
